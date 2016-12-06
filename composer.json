@@ -1,0 +1,40 @@
+{
+    "name": "peehaa/async-chatter-bot",
+    "homepage": "https://github.com/peehaa/async-twitter-bot",
+    "description": "Asynchronous chatter bot client built on the Amp concurrency framework",
+    "keywords": [
+        "chatbot",
+        "terminator",
+        "client",
+        "parallel",
+        "async",
+        "non-blocking"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pieter Hordijk",
+            "email": "info@pieterhordijk.com",
+            "role": "Lead Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7",
+        "amphp/artax": "^2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5"
+    },
+    "autoload": {
+        "psr-4": {
+            "PeeHaa\\AsyncChatterBot\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PeeHaa\\AsyncChatterBotTest\\": "tests/"
+        }
+    }
+}
