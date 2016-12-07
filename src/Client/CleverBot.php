@@ -5,16 +5,26 @@ namespace PeeHaa\AsyncChatterBot\Client;
 use Amp\Artax\Client as ArtaxClient;
 use Amp\Artax\Request;
 use Amp\Promise;
+use Amp\Success;
+use PeeHaa\AsyncChatterBot\Response\CleverBot as Response;
 
 class CleverBot
 {
-    const BASE_URL = 'http://www.cleverbot.com';
+    const SESSION_SETUP_URL = 'http://www.cleverbot.com';
 
-    const SERVICE_URL = 'http://www.cleverbot.com/webservicemin?uc=321';
+    const API_URL = 'http://www.cleverbot.com/webservicemin?uc=321';
+
+    const BASE_PARAMETERS = [
+        'stimulus'   => '',
+        'islearning' => 1,
+        'icognoid'   => 'wsd',
+    ];
 
     private $client;
 
     private $isSetUp = false;
+
+    private $previousResponse;
 
     public function __construct(ArtaxClient $client)
     {
@@ -23,42 +33,68 @@ class CleverBot
 
     public function request(string $text): Promise
     {
+        // we need to get a valid session before being able to scrape the bot responses
         if (!$this->isSetUp) {
-            $foo = yield $this->setUp();
+            return \Amp\pipe($this->setUp(), function() use ($text) {
+                $this->isSetUp = true;
 
-            var_dump($foo);
-            die;
+                return $this->request($text);
+            });
         }
 
-        $request = (new Request())
-            ->setMethod('POST')
-            ->setUri(self::SERVICE_URL)
-            ->setAllHeaders([
-                'Content-Type'  => 'application/x-www-form-urlencoded',
-            ])
-            ->setBody(http_build_query([
-                'stimulus' => $text,
-                'icognocheck' => md5($text),
-            ]))
-        ;
+        $request = $this->buildRequest($text);
 
-        return $this->client->request($request);
+        return \Amp\resolve(function() use ($request) {
+            $this->previousResponse = new Response((yield $this->client->request($request))->getBody());
+
+            return new Success($this->previousResponse);
+        });
     }
 
-    private function setUp()
+    private function setUp(): Promise
     {
-        $queryString = http_build_query([
-            'stimulus'   => '',
-            'islearning' => 1,
-            'icognoid'   => 'wsf',
-        ]);
+        $queryString = http_build_query(self::BASE_PARAMETERS);
 
-        return (new Request())
+        $request = (new Request())
             ->setMethod('GET')
-            ->setUri(self::BASE_URL . '?' . $queryString)
+            ->setUri(self::SESSION_SETUP_URL . '?' . $queryString)
             ->setAllHeaders([
                 'Accept-Language'  => 'en;q=1.0',
             ])
          ;
+
+        return $this->client->request($request);
+    }
+
+    private function buildRequest(string $text): Request
+    {
+        $parameters = self::BASE_PARAMETERS;
+
+        if ($this->previousResponse) {
+            $parameters = array_merge($parameters, $this->previousResponse->getParameters());
+        }
+
+        $parameters['stimulus']    = $text;
+        $parameters['icognocheck'] = $this->generateChecksum($parameters);
+
+        return (new Request())
+            ->setMethod('POST')
+            ->setUri(self::API_URL)
+            ->setAllHeaders([
+                'Content-Type'  => 'application/x-www-form-urlencoded',
+            ])
+            ->setBody(http_build_query($parameters))
+        ;
+    }
+
+    private function generateChecksum(array $parameters): string
+    {
+        $data = http_build_query($parameters);
+
+        // https://github.com/pierredavidbelanger/chatter-bot-api/blob/master/php/chatterbotapi.php#L165
+        // this removes `stimulus=` and cuts off the query string to be hashed
+        // don't ask, just trust it works
+        // if for some reason it doesn't work you're on your own
+        return md5(substr($data, 9, 26));
     }
 }

@@ -9,6 +9,32 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $cleverBot = new CleverBot(new Client());
 
-\Amp\wait($result = $cleverBot->request('test'));
+$promise = $cleverBot->request('Are you ok?');
 
-var_dump($result);
+$response = \Amp\wait($promise);
+
+var_dump($response->getText());
+
+$promise = $cleverBot->request('Are you a bot?');
+
+$response = \Amp\wait($promise);
+
+var_dump($response->getText());
+
+$promise = $cleverBot->request('Are you sane?');
+
+$response = \Amp\wait($promise);
+
+var_dump($response->getText());
+
+$promise = $cleverBot->request('Thanks!');
+
+$response = \Amp\wait($promise);
+
+var_dump($response->getText());
+
+$promise = $cleverBot->request('Good bye now!');
+
+$response = \Amp\wait($promise);
+
+var_dump($response->getText());
