@@ -12,12 +12,12 @@ class CleverBot
 {
     const SESSION_SETUP_URL = 'http://www.cleverbot.com';
 
-    const API_URL = 'http://www.cleverbot.com/webservicemin?uc=321';
+    const API_URL = 'http://www.cleverbot.com/webservicemin?uc=3210&botapi=https%3A%2F%2Fgithub.com%2Fpeehaa%2Fasync-chatter-bot&bot=c&cbsid=AYGPJ73P5B';
 
     const BASE_PARAMETERS = [
         'stimulus'   => '',
         'islearning' => 1,
-        'icognoid'   => 'wsd',
+        'icognoid'   => 'wsf',
     ];
 
     private $client;
@@ -53,15 +53,13 @@ class CleverBot
 
     private function setUp(): Promise
     {
-        $queryString = http_build_query(self::BASE_PARAMETERS);
-
         $request = (new Request())
             ->setMethod('GET')
-            ->setUri(self::SESSION_SETUP_URL . '?' . $queryString)
+            ->setUri(self::SESSION_SETUP_URL)
             ->setAllHeaders([
                 'Accept-Language'  => 'en;q=1.0',
             ])
-         ;
+        ;
 
         return $this->client->request($request);
     }
