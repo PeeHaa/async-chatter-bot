@@ -4,10 +4,11 @@ namespace PeeHaa\AsyncChatterBot\Example;
 
 use Amp\Artax\Client;
 use PeeHaa\AsyncChatterBot\Client\CleverBot;
+use PeeHaa\AsyncChatterBot\Credential\CleverBot as Credentials;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$cleverBot = new CleverBot(new Client());
+$cleverBot = new CleverBot(new Credentials('yourcleverbotapikey'), new Client());
 
 $promise = $cleverBot->request('Are you ok?');
 

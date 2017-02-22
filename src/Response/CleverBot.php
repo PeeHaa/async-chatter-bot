@@ -4,63 +4,39 @@ namespace PeeHaa\AsyncChatterBot\Response;
 
 class CleverBot
 {
-    private $text;
+    private $conversationState;
 
-    private $sessionId;
+    private $interactionCount;
 
-    private $logUrl;
+    private $input;
 
-    private $prevRef;
+    private $output;
 
-    private $vText2;
-
-    private $vText3;
-
-    private $vText4;
-
-    private $vText5;
-
-    private $vText6;
-
-    private $vText7;
-
-    private $vText8;
+    private $conversationId;
 
     public function __construct(string $response)
     {
-        $parsedResponse = explode("\r", $response);
+        $parsedResponse = json_decode($response, true);
 
-        $this->text      = $parsedResponse[0];
-        $this->sessionId = $parsedResponse[1];
-        $this->logUrl    = $parsedResponse[2];
-        $this->prevRef   = $parsedResponse[10];
-        $this->vText2    = $parsedResponse[9];
-        $this->vText3    = $parsedResponse[8];
-        $this->vText4    = $parsedResponse[7];
-        $this->vText5    = $parsedResponse[6];
-        $this->vText6    = $parsedResponse[5];
-        $this->vText7    = $parsedResponse[4];
-        $this->vText8    = $parsedResponse[3];
+        $this->conversationState = $parsedResponse['cs'];
+        $this->interactionCount  = (int) $parsedResponse['interaction_count'];
+        $this->input             = $parsedResponse['input'];
+        $this->output            = $parsedResponse['output'];
+        $this->conversationId    = $parsedResponse['conversation_id'];
     }
 
     public function getText(): string
     {
-        return $this->text;
+        return $this->output;
     }
 
-    public function getParameters(): array
+    public function getConversationId(): string
     {
-        return [
-            'sessionid' => $this->sessionId,
-            'logurl'    => $this->logUrl,
-            'vText8'    => $this->vText8,
-            'vText7'    => $this->vText7,
-            'vText6'    => $this->vText6,
-            'vText5'    => $this->vText5,
-            'vText4'    => $this->vText4,
-            'vText3'    => $this->vText3,
-            'vText2'    => $this->vText2,
-            'prevref'   => $this->prevRef,
-        ];
+        return $this->conversationId;
+    }
+
+    public function getConversationState(): string
+    {
+        return $this->conversationState;
     }
 }
